@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">QuizSomativo</string>
+    <string name="title_activity_quizz">Quizz</string>
+    <string name="title_activity_ranking">Ranking</string>
+</resources>
