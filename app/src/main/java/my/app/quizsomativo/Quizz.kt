@@ -5,26 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import my.app.quizsomativo.ui.theme.QuizSomativoTheme
@@ -35,27 +29,100 @@ class Quizz : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizSomativoTheme {
-                    QuizzGameplayUI()
+                QuizzGameplayUI()
             }
         }
     }
 }
 
+
+data class Question(
+    val text: String,
+    val options: List<String>,
+    val correctAnswer: String
+)
+
+
+data class Artist(
+    val name: String,
+    val img: Int,
+    val questions: List<Question>
+)
+
+val artistData = listOf(
+    Artist(
+        name = "Olivia Rodrigo",
+        img = R.drawable.or,
+        questions = listOf(
+            Question(
+                text = "Qual o maior sucesso de Olivia Rodrigo?",
+                options = listOf("Drivers License", "Good 4 U", "Deja Vu", "Brutal"),
+                correctAnswer = "Drivers License"
+            ),
+            Question(
+                text = "Qual o álbum mais recente de Olivia Rodrigo?",
+                options = listOf("Sour", "Red", "Sweetener", "Future Nostalgia"),
+                correctAnswer = "Sour"
+            )
+        )
+    ),
+    Artist(
+        name = "Bruno Mars",
+        img = R.drawable.bruno_mars,
+        questions = listOf(
+            Question(
+                text = "Qual o álbum mais famoso de Bruno Mars?",
+                options = listOf(
+                    "Unorthodox Jukebox",
+                    "24K Magic",
+                    "Doo-Wops & Hooligans",
+                    "An Evening with Silk Sonic"
+                ),
+                correctAnswer = "Doo-Wops & Hooligans"
+            ),
+            Question(
+                text = "Com quem Bruno Mars colaborou em 'Silk Sonic'?",
+                options = listOf("Anderson .Paak", "The Weeknd", "Olivia Rodrigo", "Beyoncé"),
+                correctAnswer = "Anderson .Paak"
+            )
+        )
+    ),
+    Artist(
+        name = "Alcione",
+        img = R.drawable.alcione,
+        questions = listOf(
+            Question(
+                text = "Qual o gênero musical da Alcione?",
+                options = listOf("Samba", "Pop", "Rock", "Jazz"),
+                correctAnswer = "Samba"
+            ),
+            Question(
+                text = "Alcione é conhecida por tocar qual instrumento?",
+                options = listOf("Trompete", "Violão", "Cavaquinho", "Pandeiro"),
+                correctAnswer = "Trompete"
+            )
+        )
+    )
+)
+
 @Composable
-fun TextQuestion(text: String, modifier: Modifier = Modifier, style: androidx.compose.ui.text.TextStyle) {
-    Text(text = "$text",modifier = modifier, style = style)
+fun TextQuestion(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle
+) {
+    Text(text = "$text", modifier = modifier, style = style)
 
 }
 
-@Composable
-fun listQuetion() {
-    val questions = listOf(Pair("Olivia Rodrigo",R.drawable.or), Pair("Bruno Mars",R.drawable.bruno_mars), Pair("Alcione",R.drawable.alcione))
-}
-
 
 @Composable
-fun TextAnswer(text: String, modifier: Modifier = Modifier, style: androidx.compose.ui.text.TextStyle) {
-    Text(text = "$text",modifier = modifier, style = style)
+fun TextAnswer(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle
+) {
+    Text(text = "$text", modifier = modifier, style = style)
 
 }
 
@@ -72,56 +139,67 @@ fun RadioAnswer(option: String, selectedOption: String?, onOptionSelected: (Stri
 
 @Composable
 fun QuizzGameplayUI() {
-    var textQuestion by remember { mutableStateOf("Quem foi michael jackson, mais conhecido como Lord?") }
-    val options1 = listOf("Resposta 1", "Resposta 2", "Resposta 3", "Resposta 4")
-    val questions = listOf(Pair("Olivia Rodrigo",R.drawable.or), Pair("Bruno Mars",R.drawable.bruno_mars), Pair("Alcione",R.drawable.alcione))
+    val artist = remember { artistData.random() }
+    val question = remember { artist.questions.random() }
     var selectedOption by remember { mutableStateOf<String?>(null) }
+    var isCorrectAnswer by remember { mutableStateOf<Boolean?>(null) }
 
-        QuizSomativoTheme {
+    QuizSomativoTheme {
 
-            Column (modifier = Modifier
-            ) {
-                TextQuestion(
-                    text = textQuestion, style = androidx.compose.ui.text.TextStyle(
-                    )
+        Column(
+            modifier = Modifier
+        ) {
+            Column(modifier = Modifier) {
+
+                Image(
+                    painter = painterResource(id = artist.img),
+                    contentDescription = ""
                 )
 
-                questions.forEach { (question, img) ->
-
-                    Row(modifier = Modifier
-                        .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        TextQuestion(text = question, style = androidx.compose.ui.text.TextStyle())
-                        Image(
-                            painter = painterResource(id = img),
-                            contentDescription = ""
-                        )
-                    }
-                }
-
-                options1.forEach { option ->
-
-                    Row(modifier = Modifier
-                        .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        RadioAnswer(
-                            option = option,
-                            selectedOption = selectedOption,
-                            onOptionSelected = { selectedOption = it }
-                        )
-                        TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
-                    }
-                }
+                TextQuestion(
+                    text = question.text,
+                    style = androidx.compose.ui.text.TextStyle()
+                )
             }
 
+        Column() {
+            question.options.forEach { option ->
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
 
+                ) {
+                    RadioAnswer(
+                        option = option,
+                        selectedOption = selectedOption,
+                        onOptionSelected = {
+                            selectedOption = it
+                            isCorrectAnswer = (it == question.correctAnswer)
+                        }
+                    )
+                    TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
+                }
+            }
+        }
+
+            Column () {
+                isCorrectAnswer?.let { isCorrect ->
+                    Text(
+                        text = if (isCorrect) "Correto!" else "Tente novamente.",
+                        style = androidx.compose.ui.text.TextStyle(),
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+            }
         }
     }
+
+
+
+
+}
 
 
 @Preview(showBackground = true)
