@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -16,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import my.app.quizsomativo.ui.theme.QuizSomativoTheme
 
 class Ranking : ComponentActivity() {
@@ -24,7 +29,13 @@ class Ranking : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizSomativoTheme {
+                val navController = rememberNavController()
 
+
+                NavHost(navController = navController, startDestination = "ranking") {
+                    composable("ranking") { QuizzRankingUI(navController) }
+                    composable("menu") { QuizzMenuUI(navController) }
+                }
             }
         }
     }
@@ -49,9 +60,23 @@ fun TextRanking(text: String, modifier: Modifier = Modifier, style: androidx.com
 
 }
 
+@Composable
+fun ButtonMenu(onMenuClicked: () -> Unit) {
+
+    Button(
+        modifier = Modifier
+            .height(50.dp),
+        onClick = {
+            onMenuClicked()
+        }
+    ) {
+        TextComposable(text = "MENU")
+    }
+}
+
 
 @Composable
-fun QuizzRankingUI() {
+fun QuizzRankingUI(navController: androidx.navigation.NavController) {
     val names = remember { mutableStateListOf(Pair("Julio",10), Pair("Jerso",9), Pair("Andre",12)) }
 
 
@@ -63,6 +88,10 @@ fun QuizzRankingUI() {
                 text = "Ranking", style = androidx.compose.ui.text.TextStyle(
                 )
             )
+
+            ButtonMenu() {
+                navController.navigate("menu")
+            }
 
 //            rankingList.forEach { (name, points) ->
 //
@@ -89,6 +118,7 @@ fun QuizzRankingUI() {
 @Composable
 fun QuizzRankingPreview() {
     QuizSomativoTheme {
-        QuizzRankingUI()
+        val navController = rememberNavController()
+        QuizzRankingUI(navController)
     }
 }

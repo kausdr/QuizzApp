@@ -41,21 +41,14 @@ class MainActivity : ComponentActivity() {
                 composable("menu") { QuizzMenuUI(navController) }
                 composable("gameplay/{playerName}") { backStackEntry ->
                     val playerName = backStackEntry.arguments?.getString("playerName") ?: ""
-                    QuizzGameplayUI(playerName)
+                    QuizzGameplayUI(navController, playerName)
                 }
-                composable("ranking") { QuizzRankingUI() }
+                composable("ranking") { QuizzRankingUI(navController) }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
 @Composable
 fun TextFieldText(value: String, onValueChange: (String) -> Unit, label: String? = null) {

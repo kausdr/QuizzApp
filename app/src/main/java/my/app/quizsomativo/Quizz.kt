@@ -30,6 +30,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import my.app.quizsomativo.ui.theme.QuizSomativoTheme
 
 class Quizz : ComponentActivity() {
@@ -38,19 +42,22 @@ class Quizz : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizSomativoTheme {
-                QuizzGameplayUI(playerName = "João")
+                val navController = rememberNavController()
+
+                NavHost(navController = navController, startDestination = "quizz") {
+                    composable("quizz") { QuizzGameplayUI(navController, "João") }
+                    composable("ranking") { QuizzRankingUI(navController) }
+                }
             }
         }
     }
 }
-
 
 data class Question(
     val text: String,
     val options: List<String>,
     val correctAnswer: String
 )
-
 
 data class Artist(
     val name: String,
@@ -121,9 +128,7 @@ fun TextQuestion(
     style: androidx.compose.ui.text.TextStyle
 ) {
     Text(text = "$text", modifier = modifier, style = style)
-
 }
-
 
 @Composable
 fun TextAnswer(
@@ -132,7 +137,6 @@ fun TextAnswer(
     style: androidx.compose.ui.text.TextStyle
 ) {
     Text(text = "$text", modifier = modifier, style = style)
-
 }
 
 @Composable
@@ -145,15 +149,19 @@ fun RadioAnswer(option: String, selectedOption: String?, onOptionSelected: (Stri
     )
 }
 
-
 @Composable
-fun QuizzGameplayUI(playerName: String) {
+fun QuizzGameplayUI(navController: NavController, playerName: String) {
     val viewModel = QuizzViewModel.getInstance()
+    var score = viewModel.getScore()
 
-    val artist = remember { artistData.random() }
-    val question = remember { artist.questions.random() }
+    // Usar remember para armazenar o artista e a pergunta de forma que não sejam recriados
+    var artist = remember { artistData.random() }
+    var question = remember { artist.questions.random() }
     var selectedOption by remember { mutableStateOf<String?>(null) }
     var isCorrectAnswer by remember { mutableStateOf<Boolean?>(null) }
+
+    var numberQuestions by remember { mutableStateOf(0) }
+    var hasAnswered by remember { mutableStateOf(false) }
 
     QuizSomativoTheme {
 
@@ -164,15 +172,16 @@ fun QuizzGameplayUI(playerName: String) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text("Olá $playerName", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
+            Text("Pontos $score", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
+            Text("Pergunta $numberQuestions", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Image(
                     painter = painterResource(id = artist.img),
                     contentDescription = ""
@@ -189,57 +198,69 @@ fun QuizzGameplayUI(playerName: String) {
                 )
             }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            question.options.forEach { option ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                question.options.forEach { option ->
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = if (selectedOption == option) 2.dp else 0.dp,
-                            color = when {
-                                selectedOption == option && isCorrectAnswer == true -> Color.Green
-                                selectedOption == option && isCorrectAnswer == false -> Color.Red
-                                else -> Color.Transparent
-                            },
-                            shape = RectangleShape
-                        )
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                width = if (selectedOption == option) 2.dp else 0.dp,
+                                color = when {
+                                    selectedOption == option && isCorrectAnswer == true -> Color.Green
+                                    selectedOption == option && isCorrectAnswer == false -> Color.Red
+                                    else -> Color.Transparent
+                                },
+                                shape = RectangleShape
+                            )
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioAnswer(
+                            option = option,
+                            selectedOption = selectedOption,
+                            onOptionSelected = {
+                                selectedOption = it
+                                isCorrectAnswer = (it == question.correctAnswer)
+                                if (isCorrectAnswer == true) {
+                                    viewModel.increaseScore(10)
+                                }
 
-                ) {
-                    RadioAnswer(
-                        option = option,
-                        selectedOption = selectedOption,
-                        onOptionSelected = {
-                            selectedOption = it
-                            isCorrectAnswer = (it == question.correctAnswer)
-                            if (isCorrectAnswer == true) {
-                                viewModel.increaseScore(10)
+                                hasAnswered = true
                             }
-                        }
-                    )
-                    TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
+                        )
+                        TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
+                    }
+                }
+            }
+
+            if (hasAnswered) {
+                // Atualiza o artista e a pergunta apenas após o jogador responder
+                artist = artistData.random()
+                question = artist.questions.random()
+                selectedOption = null
+                isCorrectAnswer = null
+                numberQuestions += 1
+                hasAnswered = false
+
+                // Navega para a tela de ranking após 3 perguntas
+                if (numberQuestions == 3) {
+                    navController.navigate("ranking")
                 }
             }
         }
-        }
     }
-
-
-
-
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun QuizzGameplayPreview() {
     QuizSomativoTheme {
-        QuizzGameplayUI(playerName = "João")
+        val navController = rememberNavController()
+        QuizzGameplayUI(navController = navController, playerName = "João")
     }
 }

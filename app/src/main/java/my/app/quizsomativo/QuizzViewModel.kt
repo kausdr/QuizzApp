@@ -19,6 +19,10 @@ class QuizzViewModel : ViewModel() {
         players.value = players.value + Player(name, score.value)
     }
 
+    fun getScore(): Int {
+        return score.value
+    }
+
 
 
     companion object {
