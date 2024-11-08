@@ -5,10 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,9 +22,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import my.app.quizsomativo.ui.theme.QuizSomativoTheme
 
 class Quizz : ComponentActivity() {
@@ -29,7 +38,7 @@ class Quizz : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizSomativoTheme {
-                QuizzGameplayUI()
+                QuizzGameplayUI(playerName = "João")
             }
         }
     }
@@ -138,7 +147,9 @@ fun RadioAnswer(option: String, selectedOption: String?, onOptionSelected: (Stri
 
 
 @Composable
-fun QuizzGameplayUI() {
+fun QuizzGameplayUI(playerName: String) {
+    val viewModel = QuizzViewModel.getInstance()
+
     val artist = remember { artistData.random() }
     val question = remember { artist.questions.random() }
     var selectedOption by remember { mutableStateOf<String?>(null) }
@@ -148,8 +159,19 @@ fun QuizzGameplayUI() {
 
         Column(
             modifier = Modifier
+                .fillMaxWidth()
+                .padding(WindowInsets.systemBars.asPaddingValues())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(modifier = Modifier) {
+
+            Text("Olá $playerName", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
                 Image(
                     painter = painterResource(id = artist.img),
@@ -158,16 +180,35 @@ fun QuizzGameplayUI() {
 
                 TextQuestion(
                     text = question.text,
-                    style = androidx.compose.ui.text.TextStyle()
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .padding(top = 16.dp)
                 )
             }
 
-        Column() {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             question.options.forEach { option ->
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .border(
+                            width = if (selectedOption == option) 2.dp else 0.dp,
+                            color = when {
+                                selectedOption == option && isCorrectAnswer == true -> Color.Green
+                                selectedOption == option && isCorrectAnswer == false -> Color.Red
+                                else -> Color.Transparent
+                            },
+                            shape = RectangleShape
+                        )
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
@@ -177,22 +218,15 @@ fun QuizzGameplayUI() {
                         onOptionSelected = {
                             selectedOption = it
                             isCorrectAnswer = (it == question.correctAnswer)
+                            if (isCorrectAnswer == true) {
+                                viewModel.increaseScore(10)
+                            }
                         }
                     )
                     TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
                 }
             }
         }
-
-            Column () {
-                isCorrectAnswer?.let { isCorrect ->
-                    Text(
-                        text = if (isCorrect) "Correto!" else "Tente novamente.",
-                        style = androidx.compose.ui.text.TextStyle(),
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
-            }
         }
     }
 
@@ -206,6 +240,6 @@ fun QuizzGameplayUI() {
 @Composable
 fun QuizzGameplayPreview() {
     QuizSomativoTheme {
-        QuizzGameplayUI()
+        QuizzGameplayUI(playerName = "João")
     }
 }
