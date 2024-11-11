@@ -1,18 +1,23 @@
 package my.app.quizsomativo
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
@@ -40,14 +46,12 @@ class Quizz : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val playerName = intent.getStringExtra("playerName") ?: "Jogador"
+
         setContent {
             QuizSomativoTheme {
-                val navController = rememberNavController()
-
-                NavHost(navController = navController, startDestination = "quizz") {
-                    composable("quizz") { QuizzGameplayUI(navController, "João") }
-                    composable("ranking") { QuizzRankingUI(navController) }
-                }
+                QuizzGameplayUI(playerName = playerName)
             }
         }
     }
@@ -150,7 +154,7 @@ fun RadioAnswer(option: String, selectedOption: String?, onOptionSelected: (Stri
 }
 
 @Composable
-fun QuizzGameplayUI(navController: NavController, playerName: String) {
+fun QuizzGameplayUI(playerName: String) {
     val viewModel = QuizzViewModel.getInstance()
     var score = viewModel.getScore()
 
@@ -172,8 +176,7 @@ fun QuizzGameplayUI(navController: NavController, playerName: String) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Olá $playerName", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
-            Text("Pontos $score", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
+
             Text("Pergunta $numberQuestions", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
 
             Column(
@@ -236,10 +239,41 @@ fun QuizzGameplayUI(navController: NavController, playerName: String) {
                         TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
                     }
                 }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    Text(
+                        "$playerName",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontSize = 18.sp,
+                            color = Color(0xFF915EEB).copy(alpha = 0.5f)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        "$score",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0x910114EB),
+                                    Color(0x91019224),
+                                    Color(0x918F008B)
+                                )
+                            )
+                        )
+                    )
+                }
             }
 
             if (hasAnswered) {
-                // Atualiza o artista e a pergunta apenas após o jogador responder
                 artist = artistData.random()
                 question = artist.questions.random()
                 selectedOption = null
@@ -247,9 +281,11 @@ fun QuizzGameplayUI(navController: NavController, playerName: String) {
                 numberQuestions += 1
                 hasAnswered = false
 
-                // Navega para a tela de ranking após 3 perguntas
                 if (numberQuestions == 3) {
-                    navController.navigate("ranking")
+                    viewModel.addPlayerToRanking(playerName)
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val intent = Intent(context, Ranking::class.java)
+                    context.startActivity(intent)
                 }
             }
         }
@@ -260,7 +296,6 @@ fun QuizzGameplayUI(navController: NavController, playerName: String) {
 @Composable
 fun QuizzGameplayPreview() {
     QuizSomativoTheme {
-        val navController = rememberNavController()
-        QuizzGameplayUI(navController = navController, playerName = "João")
+        QuizzGameplayUI(playerName = "João")
     }
 }

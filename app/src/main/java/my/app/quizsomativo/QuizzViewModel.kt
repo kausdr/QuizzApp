@@ -23,6 +23,10 @@ class QuizzViewModel : ViewModel() {
         return score.value
     }
 
+    fun setScore(score: Int) {
+        this.score.value = score
+    }
+
 
 
     companion object {
