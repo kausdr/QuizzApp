@@ -5,6 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.InfiniteTransition
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +22,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -30,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -264,11 +274,57 @@ fun QuizzGameplayUI(playerName: String) {
     var numberQuestions by remember { mutableStateOf(0) }
     var hasAnswered by remember { mutableStateOf(false) }
 
+    val infiniteTransition = rememberInfiniteTransition()
+
+
+    val colorState = infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 3000,
+                delayMillis = 500,
+                easing = LinearEasing
+            )
+        )
+    )
+
+    fun interpolateColorQuadruple(
+        startColor: Color,
+        middleColor1: Color,
+        middleColor2: Color,
+        endColor: Color,
+        fraction: Float
+    ): Color {
+        return when {
+            fraction < 0.25f -> lerp(startColor, middleColor1, fraction * 4) // Primeira transição
+            fraction < 0.5f -> lerp(middleColor1, middleColor2, (fraction - 0.25f) * 4) // Segunda transição
+            fraction < 0.75f -> lerp(middleColor2, middleColor1, (fraction - 0.5f) * 4) // Terceira transição
+            else -> lerp(middleColor1, endColor, (fraction - 0.75f) * 4) // Quarta transição
+        }
+    }
+
+
+    val backgroundColor = interpolateColorQuadruple(
+        startColor = Color(0x91BA64F5),
+        middleColor1 = Color(0x918B65F5),
+        middleColor2 = Color(0x91649AF5),
+        endColor = Color(0x918B65F5),
+        fraction = colorState.value
+    )
+
+
+
+
+
+
+
     QuizSomativoTheme {
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .background(backgroundColor)
                 .padding(WindowInsets.systemBars.asPaddingValues())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -347,7 +403,7 @@ fun QuizzGameplayUI(playerName: String) {
                         "$playerName",
                         style = androidx.compose.ui.text.TextStyle(
                             fontSize = 18.sp,
-                            color = Color(0xFF915EEB).copy(alpha = 0.5f)
+                            color = Color.Black
                         )
                     )
 
