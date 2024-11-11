@@ -75,14 +75,14 @@ val artistData = listOf(
         img = R.drawable.or,
         questions = listOf(
             Question(
-                text = "Qual o maior sucesso de Olivia Rodrigo?",
-                options = listOf("Drivers License", "Good 4 U", "Deja Vu", "Brutal"),
-                correctAnswer = "Drivers License"
+                text = "Qual foi o primeiro álbum de Olivia Rodrigo?",
+                options = listOf("Sour", "Good 4 U", "GUTS", "Spilled"),
+                correctAnswer = "Sour"
             ),
             Question(
                 text = "Qual o álbum mais recente de Olivia Rodrigo?",
-                options = listOf("Sour", "Red", "Sweetener", "Future Nostalgia"),
-                correctAnswer = "Sour"
+                options = listOf("Sour", "GUTS", "Sweetener", "Future Nostalgia"),
+                correctAnswer = "GUTS"
             )
         )
     ),
@@ -91,7 +91,7 @@ val artistData = listOf(
         img = R.drawable.bruno_mars,
         questions = listOf(
             Question(
-                text = "Qual o álbum mais famoso de Bruno Mars?",
+                text = "Qual o primeiro álbum de Bruno Mars?",
                 options = listOf(
                     "Unorthodox Jukebox",
                     "24K Magic",
@@ -120,6 +120,102 @@ val artistData = listOf(
                 text = "Alcione é conhecida por tocar qual instrumento?",
                 options = listOf("Trompete", "Violão", "Cavaquinho", "Pandeiro"),
                 correctAnswer = "Trompete"
+            )
+        )
+    ),
+    Artist(
+        name = "Adele",
+        img = R.drawable.adelle,
+        questions = listOf(
+            Question(
+                text = "Qual o gênero musical da Adele?",
+                options = listOf("Pop", "Sertanejo", "Rock", "Samba"),
+                correctAnswer = "Pop"
+            ),
+            Question(
+                text = "Qual o álbum mais famoso de Adele?",
+                options = listOf("21", "25", "30", "19"),
+                correctAnswer = "21"
+            )
+        )
+    ),
+    Artist(
+        name = "Eminem",
+        img = R.drawable.eminem,
+        questions = listOf(
+            Question(
+                text = "Qual o verdadeiro nome do Eminem?",
+                options = listOf("Marshall Mathers", "Eminem Slim", "Eminem Shady", "Slim Shady"),
+                correctAnswer = "Marshall Mathers"
+            ),
+            Question(
+                text = "Qual o maior sucesso de Eminem?",
+                options = listOf("Lose Yourself", "Love The Way You Lie", "Not Afraid", "Mockingbird"),
+                correctAnswer = "Lose Yourself"
+            )
+        )
+    ),
+    Artist(
+        name = "Pabllo Vittar",
+        img = R.drawable.pabllo_vittar,
+        questions = listOf(
+            Question(
+                text = "Qual o país de origem de Pabllo Vittar?",
+                options = listOf("Brasil", "Argentina", "Portugal", "Uruguai"),
+                correctAnswer = "Brasil"
+            ),
+            Question(
+                text = "Qual o gênero musical mais associado a Pabllo Vittar?",
+                options = listOf("Sertanejo", "Pop", "MPB", "Funk"),
+                correctAnswer = "Pop"
+            )
+        )
+    ),
+    Artist(
+        name = "Lady Gaga",
+        img = R.drawable.lady_gaga,
+        questions = listOf(
+            Question(
+                text = "Em qual filme Lady Gaga ganhou um Oscar?",
+                options = listOf("Star is Born", "O Lado Bom da Vida", "Moulin Rouge", "Bohemian Rhapsody"),
+                correctAnswer = "Star is Born"
+            ),
+            Question(
+                text = "Qual o nome real de Lady Gaga?",
+                options = listOf("Stefani Germanotta", "Mary Lambert", "Ariana Grande", "Kesha Rose"),
+                correctAnswer = "Stefani Germanotta"
+            )
+        )
+    ),
+    Artist(
+        name = "Beyoncé",
+        img = R.drawable.beyonce,
+        questions = listOf(
+            Question(
+                text = "Em que grupo musical Beyoncé foi integrante antes de sua carreira solo?",
+                options = listOf("Destiny's Child", "Spice Girls", "TLC", "Girls Aloud"),
+                correctAnswer = "Destiny's Child"
+            ),
+            Question(
+                text = "Qual o álbum de Beyoncé que contém a música 'Single Ladies'?",
+                options = listOf("B'Day", "Lemonade", "4", "Dangerously In Love"),
+                correctAnswer = "I Am... Sasha Fierce"
+            )
+        )
+    ),
+    Artist(
+        name = "Taylor Swift",
+        img = R.drawable.ts,
+        questions = listOf(
+            Question(
+                text = "Qual o primeiro álbum de Taylor Swift?",
+                options = listOf("Fearless", "1989", "Red", "Taylor Swift"),
+                correctAnswer = "Taylor Swift"
+            ),
+            Question(
+                text = "Com quem Taylor Swift escreveu a música 'You Belong With Me'?",
+                options = listOf("Ed Sheeran", "Calvin Harris", "John Mayer", "Liz Rose"),
+                correctAnswer = "Liz Rose"
             )
         )
     )
@@ -164,6 +260,7 @@ fun QuizzGameplayUI(playerName: String) {
     var selectedOption by remember { mutableStateOf<String?>(null) }
     var isCorrectAnswer by remember { mutableStateOf<Boolean?>(null) }
 
+    var incorrectAnswers by remember { mutableStateOf(0) }
     var numberQuestions by remember { mutableStateOf(0) }
     var hasAnswered by remember { mutableStateOf(false) }
 
@@ -176,8 +273,6 @@ fun QuizzGameplayUI(playerName: String) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Text("Pergunta $numberQuestions", style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp))
 
             Column(
                 modifier = Modifier
@@ -231,6 +326,8 @@ fun QuizzGameplayUI(playerName: String) {
                                 isCorrectAnswer = (it == question.correctAnswer)
                                 if (isCorrectAnswer == true) {
                                     viewModel.increaseScore(10)
+                                } else {
+                                    incorrectAnswers += 1
                                 }
 
                                 hasAnswered = true
@@ -281,7 +378,7 @@ fun QuizzGameplayUI(playerName: String) {
                 numberQuestions += 1
                 hasAnswered = false
 
-                if (numberQuestions == 3) {
+                if (incorrectAnswers == 3) {
                     viewModel.addPlayerToRanking(playerName)
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val intent = Intent(context, Ranking::class.java)

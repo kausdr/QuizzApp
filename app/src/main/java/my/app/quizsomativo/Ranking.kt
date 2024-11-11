@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -71,7 +72,12 @@ fun ButtonMenu(onMenuClicked: () -> Unit) {
             .height(50.dp),
         onClick = {
             onMenuClicked()
-        }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0x918A4CFA),
+            contentColor = Color.White
+        ),
+
     ) {
         TextComposable(text = "MENU")
     }

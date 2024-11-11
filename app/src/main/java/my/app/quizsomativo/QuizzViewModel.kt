@@ -16,7 +16,12 @@ class QuizzViewModel : ViewModel() {
     }
 
     fun addPlayerToRanking(name: String) {
-        players.value = players.value + Player(name, score.value)
+
+        val newPlayer = Player(name, score.value)
+
+        players.value = (players.value + newPlayer)
+            .sortedWith(compareByDescending<Player> { it.score }
+                .thenBy { players.value.indexOf(it) })
     }
 
     fun getScore(): Int {

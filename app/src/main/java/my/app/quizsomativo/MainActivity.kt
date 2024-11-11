@@ -69,7 +69,11 @@ fun ButtonPlay(playerName: String, onPlayClicked: () -> Unit) {
             .height(50.dp),
         onClick = {
             onPlayClicked()
-        }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0x918A4CFA),
+            contentColor = Color.White
+        ),
     ) {
         TextComposable(text = "PLAY")
     }
