@@ -264,9 +264,9 @@ fun QuizzGameplayUI(playerName: String) {
     val viewModel = QuizzViewModel.getInstance()
     var score = viewModel.getScore()
 
-    // Usar remember para armazenar o artista e a pergunta de forma que não sejam recriados
-    var artist = remember { artistData.random() }
-    var question = remember { artist.questions.random() }
+
+    var artist by remember { mutableStateOf(artistData.random()) }
+    var question by remember { mutableStateOf(artist.questions.random()) }
     var selectedOption by remember { mutableStateOf<String?>(null) }
     var isCorrectAnswer by remember { mutableStateOf<Boolean?>(null) }
 
@@ -387,6 +387,7 @@ fun QuizzGameplayUI(playerName: String) {
                                 }
 
                                 hasAnswered = true
+
                             }
                         )
                         TextAnswer(text = option, style = androidx.compose.ui.text.TextStyle())
@@ -423,24 +424,26 @@ fun QuizzGameplayUI(playerName: String) {
                             )
                         )
                     )
+
+                    if (hasAnswered) {
+                        artist = artistData.random()
+                        question = artist.questions.random()
+                        selectedOption = null
+                        isCorrectAnswer = null
+                        numberQuestions += 1
+                        hasAnswered = false
+
+                        if (incorrectAnswers == 3) {
+                            viewModel.addPlayerToRanking(playerName)
+                            val context = androidx.compose.ui.platform.LocalContext.current
+                            val intent = Intent(context, Ranking::class.java)
+                            context.startActivity(intent)
+                        }
+                    }
                 }
             }
 
-            if (hasAnswered) {
-                artist = artistData.random()
-                question = artist.questions.random()
-                selectedOption = null
-                isCorrectAnswer = null
-                numberQuestions += 1
-                hasAnswered = false
 
-                if (incorrectAnswers == 3) {
-                    viewModel.addPlayerToRanking(playerName)
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    val intent = Intent(context, Ranking::class.java)
-                    context.startActivity(intent)
-                }
-            }
         }
     }
 }
